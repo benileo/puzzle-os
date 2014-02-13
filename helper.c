@@ -28,7 +28,7 @@ get_input(){
   grid.cells = (cell_t **)malloc( (grid.numcols) * sizeof( cell_t *) );
   
   if( (space != NULL) && (grid.cells != NULL) ){
-    
+
     // You have an array of numcol pointers
     // For each column you have the address of the first element of the column is the i*number of rows
     // this is a weird way to do it, up and down, I would have done it side to side. 
@@ -41,6 +41,7 @@ get_input(){
       space[i].w = NO_PIECE_INDEX;
       space[i].s= NO_PIECE_INDEX;
       space[i].e = NO_PIECE_INDEX;
+      space[i].name = (char *)malloc( MAXLINELEN * sizeof(char) );
       strcpy( space[i].name , "" ); 
       sem_init( &space[i].cell_lock , 0 , 1 ); //Leave all cells unlocked. 
     }
@@ -85,32 +86,33 @@ get_input(){
       buffer[MAXLINELEN] = '\0';
       
       node_t *new = (node_t *)malloc(sizeof(node_t));
+      new->name = (char *)malloc(sizeof(char)*MAXLINELEN);
       
       if ( sscanf(buffer, "%s %d %d %d %d", (new->name), &(new->n), &(new->e), &(new->s), &(new->w)) != 5 ){
-	perror("sscanf error\n");
-	return_value = 1;
-      }
+       perror("sscanf error\n");
+       return_value = 1;
+     }
       /* INITIALIZE SEMAPHORE FOR THE NODE */
-      sem_init( &new->node_lock, 0, 1); 
+     sem_init( &new->node_lock, 0, 1); 
 
-      new->prev = &head;  
-      if(head.next == NULL){
-	head.next = new;
-	new->next = NULL;
-      }
-      else{
-	(head.next)->prev = new;
-	new->next = head.next;
-	head.next = new;
-      }
-    }
-    return_value=0;
-  }
-  else{
-    printf("memory allocation error\n");
-    return_value=1;
-  }
-  return return_value;
+     new->prev = &head;  
+     if(head.next == NULL){
+       head.next = new;
+       new->next = NULL;
+     }
+     else{
+       (head.next)->prev = new;
+       new->next = head.next;
+       head.next = new;
+     }
+   }
+   return_value=0;
+ }
+ else{
+  printf("memory allocation error\n");
+  return_value=1;
+}
+return return_value;
 }
 
 void
@@ -120,14 +122,14 @@ print_grid(void) {
   for (j = 0; j < grid.numrows; j++){
     for(i=0; i < grid.numcols; i++){
       if ( strcmp( (char *)(grid.cells[i][j].name) , "") == 0){
-	printf(". ");
-      }
-      else{ 
-	printf("%s ", grid.cells[i][j].name);
-      }
-    }
-    printf("\n");
-  }
+       printf(". ");
+     }
+     else{ 
+       printf("%s ", grid.cells[i][j].name);
+     }
+   }
+   printf("\n");
+ }
 }
 
 void

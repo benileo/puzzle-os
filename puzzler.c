@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     thread_count=(unsigned short int)( atoi(argv[1]) );
   }
 
-#ifdef DEGUG
+#ifdef DEBUG
   printf("Number of threads to solve the problem: %d\n" , thread_count);
 #endif
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-#ifdef DEGUG
+#ifdef DEBUG
   print_list();
   print_grid();
 #endif
