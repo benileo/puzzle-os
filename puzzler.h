@@ -42,4 +42,8 @@ typedef struct
 
 }grid_t;
 
+//Globals
+node_t head;
+grid_t grid;
+
 #endif

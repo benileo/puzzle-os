@@ -14,73 +14,79 @@ get_input(){
   cell_t *space;
   char *token;
   char *ssp;
-  int ROWS, COLUMNS;
 
-  fgets(buffer, MAXLINELEN - 1, stdin);
+  // Parse the first line. Num rows and columns. 
+  fgets( buffer , MAXLINELEN - 1 , stdin );
   buffer[MAXLINELEN] = '\0';
-  sscanf(buffer, "%d %d", &COLUMNS, &ROWS);
-  
-  grid.numcols = COLUMNS;
-  grid.numrows = ROWS;
+  sscanf(buffer, "%d %d", &(grid.numcols) , &(grid.numrows) );
 
-  space = (cell_t *) malloc( (ROWS)*(COLUMNS) * sizeof( cell_t ) ) ;
-  grid.cells = (cell_t **)malloc( (COLUMNS) * sizeof( cell_t *) );
+  // Allocate space for all the cells in the grid
+  space = (cell_t *) malloc( (grid.numrows)*(grid.numcols) * sizeof( cell_t ) ) ;
+
+  // Allocate space for some pointers that will define the rows in the grid
+  // Return a pointer to that space 
+  grid.cells = (cell_t **)malloc( (grid.numcols) * sizeof( cell_t *) );
   
   if( (space != NULL) && (grid.cells != NULL) ){
     
-    for(i = 0; i < (COLUMNS) ; i++ ){
-      grid.cells[i] = space + i*(ROWS);
+    // You have an array of numcol pointers
+    // For each column you have the address of the first element of the column is the i*number of rows
+    // this is a weird way to do it, up and down, I would have done it side to side. 
+    for(i = 0; i < (grid.numcols) ; i++ ){
+      grid.cells[i] = space + i*(grid.numrows);
     }
     
-    for(i = 0; i < ((COLUMNS)  * (ROWS)) ; i++){
-      space[i].north = NO_PIECE_INDEX;
-      space[i].west = NO_PIECE_INDEX;
-      space[i].south= NO_PIECE_INDEX;
-      space[i].east = NO_PIECE_INDEX;
+    for(i = 0; i < ((grid.numcols)  * (grid.numrows)) ; i++){
+      space[i].n = NO_PIECE_INDEX;
+      space[i].w = NO_PIECE_INDEX;
+      space[i].s= NO_PIECE_INDEX;
+      space[i].e = NO_PIECE_INDEX;
       strcpy( space[i].name , "" ); 
-      sem_init( &space[i].cell_lock , 0 , 1 );
+      sem_init( &space[i].cell_lock , 0 , 1 ); //Leave all cells unlocked. 
     }
 
-    
+    // Fill in the top row of the grid
     fgets(buffer, MAXLINELEN, stdin);
     ssp = NULL;
     token = strtok_r(buffer, " \n", &ssp);
-    for(i = 0; i < COLUMNS; i++){
-      grid.cells[i][0].north = atoi(strtok_r( NULL, " \n", &ssp));
+    for(i = 0; i < grid.numcols; i++){
+      grid.cells[i][0].n = atoi(strtok_r( NULL, " \n", &ssp));
     }
     
+    // Fill in the bottom of the grid
     fgets(buffer, MAXLINELEN, stdin );
     ssp = NULL;
     token = strtok_r(buffer, " \n", &ssp);
-    for (i = 0; i < COLUMNS; i++ ){
-      grid.cells[i][ROWS-1].south = atoi( strtok_r(NULL, " \n", &ssp ) );
+    for (i = 0; i < grid.numcols; i++ ){
+      grid.cells[i][grid.numrows-1].s = atoi( strtok_r(NULL, " \n", &ssp ) );
     }
     
-   
+    // Fill in the left side
     fgets(buffer, MAXLINELEN, stdin );
     ssp = NULL;
     token = strtok_r(buffer, " \n", &ssp);
-    for (i = 0; i < ROWS; i++ ){
-      grid.cells[0][i].west = atoi( strtok_r(NULL, " \n", &ssp ) );
+    for (i = 0; i < grid.numrows; i++ ){
+      grid.cells[0][i].w = atoi( strtok_r(NULL, " \n", &ssp ) );
     }
     
+    // Fill in the right side
     fgets(buffer, MAXLINELEN, stdin );
     buffer[MAXLINELEN] = '\0';
     ssp = NULL;
     token = strtok_r(buffer, " \n", &ssp);
-    for (i = 0; i< ROWS; i++){
-      grid.cells[COLUMNS - 1][i].east = atoi( strtok_r(NULL, " \n", &ssp ) );
+    for (i = 0; i< grid.numrows; i++){
+      grid.cells[grid.numcols - 1][i].e = atoi( strtok_r(NULL, " \n", &ssp ) );
     }
     
     /* Create Doubly Linked List to hold the pieces */
 
-    for(i = 0; i < (COLUMNS * ROWS); i++){
+    for(i = 0; i < (grid.numcols * grid.numrows); i++){
       fgets(buffer, MAXLINELEN - 1, stdin);
       buffer[MAXLINELEN] = '\0';
       
       node_t *new = (node_t *)malloc(sizeof(node_t));
       
-      if ( sscanf(buffer, "%s %d %d %d %d", &(new->name), &(new->north), &(new->east), &(new->south), &(new->west)) != 5 ){
+      if ( sscanf(buffer, "%s %d %d %d %d", (new->name), &(new->n), &(new->e), &(new->s), &(new->w)) != 5 ){
 	perror("sscanf error\n");
 	return_value = 1;
       }
@@ -98,12 +104,12 @@ get_input(){
 	head.next = new;
       }
     }
+    return_value=0;
   }
   else{
     printf("memory allocation error\n");
+    return_value=1;
   }
-  return_value = 0;
-
   return return_value;
 }
 

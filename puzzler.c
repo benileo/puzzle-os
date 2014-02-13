@@ -5,19 +5,22 @@
 
 #include "puzzler.h"
 
-node_t head;
-grid_t grid;
+#define DEBUG
 
 int main(int argc, char *argv[])
 {
-  unsigned short int thread-count;
+  unsigned short int thread_count;
 
   if(argc==1){
-    thread-count=0;
+    thread_count=0;
   }
   else{
-    thread-count=(unsigned short int)( atoi(argv[1]) );
+    thread_count=(unsigned short int)( atoi(argv[1]) );
   }
+
+#ifdef DEGUG
+  printf("Number of threads to solve the problem: %d\n" , thread_count);
+#endif
 
   /* INITIALIZE GLOBAL DOUBLY LINKED LIST */
   head.next = NULL;
@@ -25,21 +28,23 @@ int main(int argc, char *argv[])
   sem_init(&head.node_lock,0,1); //leave the start of the list unlocked
 
   /* GLOBAL GRID */
-  grid.cells = NULL; //the pointer is null
+  grid.cells = NULL; //the pointer is null, not too sure on this one...
 
   /* GET THE PROBLEM FROM STDIN */
-  if( (get_input()) == 1 ){
+  if( ( get_input() ) == 1 ){
     perror("input error. check the file for proper format");
     exit(1);
   }
 
+#ifdef DEGUG
   print_list();
+  print_grid();
+#endif
+  
 
   // Solve the problem without using threads
-  if (argc==1){
-    // Call solver function
-    // print grid print_grid();
-    // return 0 exit(0);
+  if (thread_count == 0){
+    //solve
   }
 
   // Define thread attributes
@@ -50,8 +55,8 @@ int main(int argc, char *argv[])
   //create threads
   
   //print grid && release memory
-  print_grid();
-  release_memory();
+  //print_grid();
+  //release_memory();
 
   return 0;
 }
