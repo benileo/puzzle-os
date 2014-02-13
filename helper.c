@@ -3,7 +3,7 @@
 /*            os            */
 /*      multi-threaded      */
 
-#include "puzzle.h"
+#include "puzzler.h"
 
 int
 get_input(){
@@ -141,13 +141,3 @@ release_memory(){
   free( grid.cells );
   grid.cells = NULL;
 }
-  
-
-  
-
-
-  
-
-  
-   
-  

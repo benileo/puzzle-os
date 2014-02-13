@@ -16,24 +16,21 @@
 // Linked list node Data Structure
 typedef struct _node_
 {
-  int north;
-  int south;
-  int east;
-  int west;
-  char name[LABEL_LEN + 1];
+
+  int n,s,e,w;
+  char *name;
   struct _node_ *next, *prev;
   sem_t node_lock;
+
 }node_t;
 
 //puzzle piece data structure
 typedef struct
 {
-  int north;
-  int west;
-  int east;
-  int south;
-  char name[LABEL_LEN + 1];
+  int n,s,e,w;
+  char *name;
   sem_t cell_lock;
+
 }cell_t;
 
 //grid 
@@ -42,13 +39,7 @@ typedef struct
   cell_t **cells;
   int numcols;
   int numrows;
+
 }grid_t;
-
-
-// linked list head
-node_t head;
-
-// the grid
-grid_t grid;	
 
 #endif
