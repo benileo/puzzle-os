@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 #ifdef DEBUG
   print_list();
   print_grid();
+  printf("N: %d\nE: %d\n S: %d\n W: %d\n", grid.cells[0][0].n, grid.cells[0][0].e, grid.cells[0][0].s, grid.cells[0][0].w);
 #endif
   
 
