@@ -46,4 +46,10 @@ typedef struct
 node_t head;
 grid_t grid;
 
+typedef enum{
+  SE, SW, NW, NE
+}direction;
+
+
+
 #endif

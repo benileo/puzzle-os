@@ -7,6 +7,8 @@
 
 #define DEBUG
 
+void * puzzle_solver( direction dir );
+
 int main(int argc, char *argv[])
 {
   unsigned short int thread_count;
@@ -44,25 +46,69 @@ int main(int argc, char *argv[])
   
 
   // Solve the problem without using threads
-  if (thread_count == 0){
-    //solve
+  if (thread_count == 0)
+  {
+    //direction dir = SE;
+    //puzzle_solver( (void*)dir );
+  }
+  else
+  {
+    pthread_attr_t atr;
+    pthread_attr_init(&atr);
+    pthread_attr_setscope( &atr , PTHREAD_SCOPE_SYSTEM );
+    pthread_t tpool[thread_count];
+
+
+
   }
 
-  // Define thread attributes
-  pthread_attr_t atr;
-  pthread_attr_init(&atr);
-  pthread_attr_setscope( &atr , PTHREAD_SCOPE_SYSTEM );
 
-  //create threads
-  
-  //print grid && release memory
   //print_grid();
   //release_memory();
 
   return 0;
 }
-  
 
+  
+void * puzzle_solver(direction dir)
+{
+
+    // Set the starting point for solving.
+
+    // this depends on the direction that the thread will be solving. 
+
+    int s_row, s_column;
+
+    switch(dir)
+    {
+      case SE:
+        s_row=0;s_column=0;
+        break;
+      case SW:
+        s_row=0;s_column=grid.numcols-1;
+        break;
+      case NW:
+        s_row=grid.numrows-1;s_column=grid.numcols-1;
+        break;
+      case NE:
+        s_row=grid.numrows-1;s_column=0;
+        break;
+    }
+
+
+    while
+      (
+
+        ( (dir == SE) && )
+        ()
+        ()
+        ()
+
+        )
+    {
+      
+    }
+}
 
   
 
