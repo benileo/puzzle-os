@@ -72,11 +72,6 @@ int main(int argc, char *argv[])
   
 void * puzzle_solver(direction dir)
 {
-
-    // Set the starting point for solving.
-
-    // this depends on the direction that the thread will be solving. 
-
     int s_row, s_column;
 
     switch(dir)
@@ -95,23 +90,52 @@ void * puzzle_solver(direction dir)
         break;
     }
 
-
     while
       (
-
-        ( (dir == SE) && )
-        ()
-        ()
-        ()
-
-        )
+       ( (dir == SE) && (s_row < grid.numrows) ) ||
+       ( (dir == SW) && (s_row < grid.numrows) ) ||
+       ( (dir == NW) && (s_row >= 0) ) ||
+       ( (dir == NE) && (s_row >= 0) ) 
+      )
     {
-      
+      //if you can get the lock and the piece is not found
+      if ( 
+	  ( sem_trywait( &(grid.cells[s_column][s_row].cell_lock) ) == 0 ) &&
+	  ( grid.cells[s_column][s_row].n == -1 || grid.cells[s_column][s_row].e == -1 || 
+	    grid.cells[s_column][s_row].w == -1 || grid.cells[s_column][s_row].s == -1 )
+	 )
+	{
+	  find_piece( s_row , s_column);
+	  //increment s_row && column based on direction
+	}
+      else
+	{
+	  //increment
+	}
     }
+
+    return NULL;
 }
 
   
+void find_piece(int row, int column)
+{
+  int found=0;
+  node_t *runner;
 
+  sem_wait( &(head.next.lock) );
+  runner=head.next;
+
+  while( !found ) 
+  {
+    if( grid.cells[column][row].
+
+
+  }
   
+
+
+}
+
    
   
