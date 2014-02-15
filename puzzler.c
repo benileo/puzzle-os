@@ -104,6 +104,7 @@ void * puzzle_solver(direction dir)
      )
     {
       find_piece( s_row , s_column );
+      sem_post(&(grid.cells[s_column][s_row].cell_lock));
       switch(dir)
       {
         case SE:
@@ -175,6 +176,11 @@ void find_piece(int row, int column)
   //find the piece 
   while( !found ) 
   {
+
+#ifdef DEBUG
+    if (runner == NULL) printf("unable to find piece...about to seg-fault\n");
+#endif
+
     sem_wait( &(runner->node_lock));
     if( 
       (grid.cells[column][row].n == runner->n && grid.cells[column][row].e == runner->e) ||
@@ -185,7 +191,8 @@ void find_piece(int row, int column)
       (column < grid.numcols-1 && row > 0 && grid.cells[column][row-1].s == runner->n && grid.cells[column+1][row].w == runner->e) ||
       (column < grid.numcols-1 && row < grid.numrows-1  && grid.cells[column][row+1].n == runner->s && grid.cells[column+1][row].w == runner->e) ||
       (column > 0 && row < grid.numrows-1 && grid.cells[column][row+1].n == runner->s && grid.cells[column-1][row].e == runner->w) ||
-      (column > 0 && row==0 && grid.cells[column][row].n == runner->n && grid.cells[column-1][row].e == runner->w ) 
+      (column > 0 && row==0 && grid.cells[column][row].n == runner->n && grid.cells[column-1][row].e == runner->w ) ||
+      (column == 0 && row!=0 && grid.cells[column][row-1].s == runner->n && grid.cells[column][row].w == runner->w) 
       )
     {
       found=1;
