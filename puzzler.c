@@ -180,7 +180,12 @@ void find_piece(int row, int column)
       (grid.cells[column][row].n == runner->n && grid.cells[column][row].e == runner->e) ||
       (grid.cells[column][row].n == runner->n && grid.cells[column][row].w == runner->w) ||
       (grid.cells[column][row].s == runner->s && grid.cells[column][row].e == runner->e) ||
-      (grid.cells[column][row].s == runner->s && grid.cells[column][row].w == runner->w)
+      (grid.cells[column][row].s == runner->s && grid.cells[column][row].w == runner->w) ||
+      (column > 0 && row > 0 && grid.cells[column][row-1].s == runner->n && grid.cells[column-1][row].e == runner->w) ||
+      (column < grid.numcols-1 && row > 0 && grid.cells[column][row-1].s == runner->n && grid.cells[column+1][row].w == runner->e) ||
+      (column < grid.numcols-1 && row < grid.numrows-1  && grid.cells[column][row+1].n == runner->s && grid.cells[column+1][row].w == runner->e) ||
+      (column > 0 && row < grid.numrows-1 && grid.cells[column][row+1].n == runner->s && grid.cells[column-1][row].e == runner->w) ||
+      (column > 0 && row==0 && grid.cells[column][row].n == runner->n && grid.cells[column-1][row].e == runner->w ) 
       )
     {
       found=1;
@@ -197,7 +202,10 @@ void find_piece(int row, int column)
   grid.cells[column][row].e = runner->e;
   grid.cells[column][row].s = runner->s;
   strcpy( grid.cells[column][row].name, runner->name );
+
+#ifdef DEBUG
   printf("%s\n", runner->name);
+#endif
 
   //Unlink and free the item from the list
   runner->prev->next = runner->next;
