@@ -7,7 +7,7 @@
 
 #define DEBUG
 
-void * puzzle_solver( direction dir );
+void * puzzle_solver( void * );
 void find_piece(int row, int column);
 
 int main(int argc, char *argv[])
@@ -56,14 +56,30 @@ int main(int argc, char *argv[])
   // Solve the problem without using threads
   if (thread_count == 0)
   {
-    puzzle_solver( NE );
+    puzzle_solver( (void *)NE );
   }
   else
   {
+    int l;
     pthread_attr_t atr;
     pthread_attr_init(&atr);
     pthread_attr_setscope( &atr , PTHREAD_SCOPE_SYSTEM );
     pthread_t tpool[thread_count];
+
+    // create the thread pool
+    for ( l = 0; l < thread_count; l++ ){
+      direction p = (direction)(l%4);
+      pthread_create(   &(tpool[l]), 
+                        &atr,
+                        puzzle_solver,
+                        (void *)p);
+    }
+
+    // wait for the threads to finish
+    for ( l = 0; l < thread_count; l++ ){
+      pthread_join( tpool[l], NULL );
+    }
+
   }
 
 
@@ -73,8 +89,9 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-void * puzzle_solver(direction dir)
+void * puzzle_solver(void *p)
 {
+  direction dir = (direction)p;
   int s_row, s_column;
 
   switch(dir)
