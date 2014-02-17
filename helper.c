@@ -134,10 +134,19 @@ print_grid(void) {
 
 void
 print_list(){
-  node_t *runner = head.next;
+  node_t *runner = &head;
+
   printf("LIST:\n");
+  if ( runner == NULL ) printf("List is Empty\n");
   while (runner != NULL){
-    printf("%s\n" , runner->name);
+
+
+    printf("%s\tsem-value:" , runner->name);
+    int val, *p;
+    p = &val;
+    sem_getvalue( &(runner->node_lock), p);
+    printf("%d\n",val);
+
     runner = runner->next;
   }
 }
