@@ -35,10 +35,16 @@ int main(int argc, char *argv[])
   grid.cells = NULL; //the pointer is null, not too sure on this one...
 
   /* GET THE PROBLEM FROM STDIN */
+#ifdef DEBUG
+  printf("Reading Input........");
+#endif
   if( ( get_input() ) == 1 ){
     perror("input error. check the file for proper format");
     exit(1);
   }
+#ifdef DEBUG
+    printf("done\n");
+#endif
 
 #ifdef DEBUG
   print_list();
@@ -50,7 +56,7 @@ int main(int argc, char *argv[])
   // Solve the problem without using threads
   if (thread_count == 0)
   {
-    puzzle_solver( SW );
+    puzzle_solver( NW );
   }
   else
   {
@@ -204,7 +210,9 @@ void find_piece(int row, int column)
       (column !=0 && row==0 && grid.cells[column][row].n == runner->n && grid.cells[column-1][row].e == runner->w ) || //se
       (column == 0 && row!=0 && grid.cells[column][row-1].s == runner->n && grid.cells[column][row].w == runner->w) || //se
       (column != grid.numcols-1 && row==0 && grid.cells[column][row].n == runner->n && grid.cells[column+1][row].w == runner->e) || //sw
-      (column == grid.numcols-1 && row!=0 && grid.cells[column][row-1].s == runner->n && grid.cells[column][row].e == runner->e)    //sw
+      (column == grid.numcols-1 && row!=0 && grid.cells[column][row-1].s == runner->n && grid.cells[column][row].e == runner->e) || //sw
+      (column != grid.numcols-1 && row == grid.numrows-1 && grid.cells[column][row].s == runner->s && grid.cells[column+1][row].w == runner->e) || //nw
+      (column == grid.numcols-1 && row != grid.numrows -1 && grid.cells[column][row+1].n == runner->s && grid.cells[column][row].e == runner->e) //nw
       )
 {
   found=1;
