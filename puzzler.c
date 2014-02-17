@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   // Solve the problem without using threads
   if (thread_count == 0)
   {
-      puzzle_solver( SE );
+    puzzle_solver( SW );
   }
   else
   {
@@ -108,36 +108,36 @@ void * puzzle_solver(direction dir)
       switch(dir)
       {
         case SE:
-          if(s_column == grid.numcols-1){
-            s_row++;s_column=0;
-          }else{
-            s_column++;
-          }
+        if(s_column == grid.numcols-1){
+          s_row++;s_column=0;
+        }else{
+          s_column++;
+        }
         break;
 
         case SW:
-          if(s_column == 0){
-            s_row++;s_column=grid.numcols-1;
-          }else{
-            s_column--;
-          }
-          break;
+        if(s_column == 0){
+          s_row++;s_column=grid.numcols-1;
+        }else{
+          s_column--;
+        }
+        break;
 
         case NW:
-          if(s_column == 0){
-            s_row--;s_column=grid.numcols-1;
-          }else{
-            s_column--;
-          }
-          break;
+        if(s_column == 0){
+          s_row--;s_column=grid.numcols-1;
+        }else{
+          s_column--;
+        }
+        break;
 
         case NE:
-          if(s_column == grid.numcols-1){
-            s_row--;s_column=0;
-          }else{
-            s_column++;
-          }
-          break;
+        if(s_column == grid.numcols-1){
+          s_row--;s_column=0;
+        }else{
+          s_column++;
+        }
+        break;
       }
     }
     else
@@ -171,7 +171,11 @@ void find_piece(int row, int column)
   node_t *runner=head.next;
 
   //Get the lock to the head
-  sem_wait( &(head.node_lock) );
+  if ( sem_wait( &(head.node_lock) ) != 0 ){
+#ifdef DEBUG
+    printf("Thread ID %d was unable to aquire semaphore for the HEAD of the list.\n", (int)pthread_self() );
+#endif
+  }
 
   //find the piece 
   while( !found ) 
@@ -181,7 +185,13 @@ void find_piece(int row, int column)
     if (runner == NULL) printf("unable to find piece...about to seg-fault\n");
 #endif
 
-    sem_wait( &(runner->node_lock));
+    // Lock the NODE
+    if ( (sem_wait( &(runner->node_lock) ) ) != 0 ){
+#ifdef DEBUG
+      printf( "Thread ID %d was unable to aquire semaphore\n" , (int)pthread_self() );
+#endif
+    }  
+
     if( 
       (grid.cells[column][row].n == runner->n && grid.cells[column][row].e == runner->e) ||
       (grid.cells[column][row].n == runner->n && grid.cells[column][row].w == runner->w) ||
@@ -191,33 +201,39 @@ void find_piece(int row, int column)
       (column < grid.numcols-1 && row > 0 && grid.cells[column][row-1].s == runner->n && grid.cells[column+1][row].w == runner->e) ||
       (column < grid.numcols-1 && row < grid.numrows-1  && grid.cells[column][row+1].n == runner->s && grid.cells[column+1][row].w == runner->e) ||
       (column > 0 && row < grid.numrows-1 && grid.cells[column][row+1].n == runner->s && grid.cells[column-1][row].e == runner->w) ||
-      (column > 0 && row==0 && grid.cells[column][row].n == runner->n && grid.cells[column-1][row].e == runner->w ) ||
-      (column == 0 && row!=0 && grid.cells[column][row-1].s == runner->n && grid.cells[column][row].w == runner->w) 
+      (column !=0 && row==0 && grid.cells[column][row].n == runner->n && grid.cells[column-1][row].e == runner->w ) || //se
+      (column == 0 && row!=0 && grid.cells[column][row-1].s == runner->n && grid.cells[column][row].w == runner->w) || //se
+      (column != grid.numcols-1 && row==0 && grid.cells[column][row].n == runner->n && grid.cells[column+1][row].w == runner->e) || //sw
+      (column == grid.numcols-1 && row!=0 && grid.cells[column][row-1].s == runner->n && grid.cells[column][row].e == runner->e)    //sw
       )
-    {
-      found=1;
-    }
-    else{
-      sem_post( &(runner->prev->node_lock) );
-      runner=runner->next;
-    }
-  }
+{
+  found=1;
+}
+else{
+  sem_post( &(runner->prev->node_lock) );
+  runner=runner->next;
+}
+}
 
   // Fill in the piece to the grid
-  grid.cells[column][row].n = runner->n;
-  grid.cells[column][row].w = runner->w;
-  grid.cells[column][row].e = runner->e;
-  grid.cells[column][row].s = runner->s;
-  strcpy( grid.cells[column][row].name, runner->name );
+grid.cells[column][row].n = runner->n;
+grid.cells[column][row].w = runner->w;
+grid.cells[column][row].e = runner->e;
+grid.cells[column][row].s = runner->s;
+strcpy( grid.cells[column][row].name, runner->name );
 
 #ifdef DEBUG
-  printf("%s\n", runner->name);
+printf("%s\n", runner->name);
 #endif
 
-  //Unlink and free the item from the list
-  runner->prev->next = runner->next;
-  sem_post( &(runner->prev->node_lock) );
-  free(runner);
+//Unlink and free the item from the list
+runner->prev->next = runner->next;
+if ( runner->next != NULL ){
+  runner->next->prev = runner->prev;
+}
+
+sem_post( &(runner->prev->node_lock) );
+free(runner);
 }
 
 
