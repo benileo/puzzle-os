@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
   // Solve the problem without using threads
   if (thread_count == 0)
   {
-    puzzle_solver( NW );
+    puzzle_solver( NE );
   }
   else
   {
@@ -198,6 +198,8 @@ void find_piece(int row, int column)
 #endif
     }  
 
+    // logic to check to see if the current node contains the correct piece
+    // as you can see there are many cases and exceptions
     if( 
       (grid.cells[column][row].n == runner->n && grid.cells[column][row].e == runner->e) ||
       (grid.cells[column][row].n == runner->n && grid.cells[column][row].w == runner->w) ||
@@ -212,7 +214,9 @@ void find_piece(int row, int column)
       (column != grid.numcols-1 && row==0 && grid.cells[column][row].n == runner->n && grid.cells[column+1][row].w == runner->e) || //sw
       (column == grid.numcols-1 && row!=0 && grid.cells[column][row-1].s == runner->n && grid.cells[column][row].e == runner->e) || //sw
       (column != grid.numcols-1 && row == grid.numrows-1 && grid.cells[column][row].s == runner->s && grid.cells[column+1][row].w == runner->e) || //nw
-      (column == grid.numcols-1 && row != grid.numrows -1 && grid.cells[column][row+1].n == runner->s && grid.cells[column][row].e == runner->e) //nw
+      (column == grid.numcols-1 && row != grid.numrows -1 && grid.cells[column][row+1].n == runner->s && grid.cells[column][row].e == runner->e) || //nw
+      (column !=0 && row==grid.numrows-1 && grid.cells[column][row].s == runner->s && grid.cells[column-1][row].e == runner->w ) || //ne
+      (column == 0 && row != grid.numrows-1 && grid.cells[column][row+1].n == runner->s && grid.cells[column][row].w == runner->w ) //ne
       )
 {
   found=1;
