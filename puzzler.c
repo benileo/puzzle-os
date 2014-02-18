@@ -5,7 +5,7 @@
 
 #include "puzzler.h"
 
-#define DEBUG
+//#define DEBUG
 
 void * puzzle_solver( void * );
 void find_piece(int row, int column);
