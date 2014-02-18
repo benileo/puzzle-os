@@ -138,6 +138,7 @@ print_list(){
 
   printf("LIST:\n");
   if ( runner == NULL ) printf("List is Empty\n");
+  
   while (runner != NULL){
 
 
