@@ -5,7 +5,9 @@
 
 #include "puzzler.h"
 
+/* Uncomment for debug mode */
 #define DEBUG
+
 
 void * puzzle_solver( void * );
 void find_piece(int row, int column);
@@ -57,7 +59,7 @@ int main(int argc, char *argv[])
   // Solve the problem without using threads
   if (thread_count == 0)
   {
-    puzzle_solver( (void *)NE );
+    puzzle_solver( (void *)NW );
   }
   else
   {
