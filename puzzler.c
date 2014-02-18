@@ -5,7 +5,9 @@
 
 #include "puzzler.h"
 
-//#define DEBUG
+/* Uncomment for debug mode 
+#define DEBUG
+*/
 
 void * puzzle_solver( void * );
 void find_piece(int row, int column);
@@ -29,6 +31,7 @@ int main(int argc, char *argv[])
   head.next = NULL;
   head.prev = NULL;
   head.n=-1;head.e=-1;head.w=-1;head.s=-1;
+  head.name="HEAD";
   sem_init(&head.node_lock,0,1);
 
   /* GLOBAL GRID */
@@ -82,8 +85,8 @@ int main(int argc, char *argv[])
 
   }
 
-
   print_grid();
+
   release_memory();
 
   return 0;
@@ -126,8 +129,21 @@ void * puzzle_solver(void *p)
        grid.cells[s_column][s_row].w == -1 || grid.cells[s_column][s_row].s == -1 )
      )
     {
+
+#ifdef DEBUG
+      printf("Grid Semaphore Obtained for %dx%d:\t thread-id:%d\n", s_column, s_row, ((int)pthread_self()) % 1000 );
+#endif
+
+      //you need two sides to solve the puzzle 
+      //spin while you wait for the other thread to fill
+      while (
+        ( (dir == SE || dir == SW) && s_row!=0 && grid.cells[s_column][s_row-1].s == -1) || 
+        ( (dir == NE || dir == NW) && s_row!=grid.numrows-1 && grid.cells[s_column][s_row + 1].n == -1)
+        ){}
+
       find_piece( s_row , s_column );
       sem_post(&(grid.cells[s_column][s_row].cell_lock));
+      
       switch(dir)
       {
         case SE:
@@ -165,6 +181,9 @@ void * puzzle_solver(void *p)
     }
     else
     {
+#ifdef DEBUG
+      printf("Grid Semaphore NOT obtained for %dx%d:\t thread-id:%d\n", s_column, s_row, ((int)pthread_self()) % 1000 );
+#endif
       switch(dir)
       {
         case SE:
@@ -183,6 +202,9 @@ void * puzzle_solver(void *p)
     }
   }  
 
+#ifdef DEBUG
+  printf("Thread %d about to exit\n", ((int)pthread_self()) % 1000);
+#endif
 
   return NULL;
 }
@@ -190,28 +212,42 @@ void * puzzle_solver(void *p)
 
 void find_piece(int row, int column)
 {
+#ifdef DEBUG
+  printf("finding piece %dx%d\n", column, row);
+#endif
+
   int found=0;
-  node_t *runner=head.next;
 
   //Get the lock to the head
   if ( sem_wait( &(head.node_lock) ) != 0 ){
 #ifdef DEBUG
-    printf("Thread ID %d was unable to aquire semaphore for the HEAD of the list.\n", (int)pthread_self() );
+    printf("Thread ID %d was unable to aquire semaphore for the HEAD of the list.\n", ((int)pthread_self()) % 1000 );
 #endif
   }
+  else{
+#ifdef DEBUG
+    printf("Head to the list acquired. thread-id:%d\n", ((int)pthread_self()) % 1000 );
+#endif
+  }
+
+  node_t *runner=head.next;
 
   //find the piece 
   while( !found ) 
   {
 
+    // if you hit the end of the list. start again, the piece exists. 
+    if (runner == NULL){
 #ifdef DEBUG
-    if (runner == NULL) printf("unable to find piece...about to seg-fault\n");
+      printf("unable to find piece. %2dx%2d thread %d STARTING AGAIN\n" , column, row, ((int)pthread_self()) % 1000);
 #endif
+    }
+
 
     // Lock the NODE
-    if ( (sem_wait( &(runner->node_lock) ) ) != 0 ){
+    if ( (sem_wait( &(runner->node_lock) ) ) == 0 && (row == 99) ){
 #ifdef DEBUG
-      printf( "Thread ID %d was unable to aquire semaphore\n" , (int)pthread_self() );
+      printf( "Thread ID %d has aquired the semaphore for piece: %s\n" , ( (int)pthread_self()) % 1000 , runner->name );
 #endif
     }  
 
@@ -238,8 +274,14 @@ void find_piece(int row, int column)
 {
   found=1;
 }
+  // Post on the semaphore
 else{
-  sem_post( &(runner->prev->node_lock) );
+  if ( sem_post( &(runner->prev->node_lock) ) == 0 && row==99){
+#ifdef DEBUG
+    printf("Thread %d has posted for the semaphore for %s\n" , ((int)pthread_self()) % 1000 , runner->prev->name );
+#endif
+  }
+  // move the runner to the next item in the list
   runner=runner->next;
 }
 }
@@ -252,7 +294,7 @@ grid.cells[column][row].s = runner->s;
 strcpy( grid.cells[column][row].name, runner->name );
 
 #ifdef DEBUG
-printf("%s\n", runner->name);
+  printf("%s\tthread-id:%d\n", runner->name, ((int)pthread_self()) % 1000 );
 #endif
 
 //Unlink and free the item from the list
@@ -260,9 +302,21 @@ runner->prev->next = runner->next;
 if ( runner->next != NULL ){
   runner->next->prev = runner->prev;
 }
+else{
+  runner->prev->next == NULL;
+}
 
-sem_post( &(runner->prev->node_lock) );
+// Post for the semaphore that was the previous node in the list. 
+if ( sem_post( &(runner->prev->node_lock) ) == 0 && row==99){
+#ifdef DEBUG
+    printf("Thread %d has posted for the semaphore for %s\n" , ((int)pthread_self()) % 1000 , runner->prev->name );
+#endif
+}
+
+// Free the piece's memory back to the Operating System
 free(runner);
+
+
 }
 
 
