@@ -138,7 +138,7 @@ void * puzzle_solver(void *p)
       //spin while you wait for the other thread to fill
       while (
         ( (dir == SE || dir == SW) && s_row!=0 && grid.cells[s_column][s_row-1].s == -1) || 
-        ( (dir == NE || dir == NW) && s_row!=grid.numrows-1 && grid.cells[s_column][s_row].n == -1)
+        ( (dir == NE || dir == NW) && s_row!=grid.numrows-1 && grid.cells[s_column][s_row + 1].n == -1)
         ){}
 
       find_piece( s_row , s_column );
